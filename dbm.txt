@@ -1,0 +1,140 @@
+🔹 DML – Data Manipulation Language
+Command	Purpose
+SELECT	→ To retrieve rows or columns from a table
+INSERT	→ To add new rows (data) into a table
+UPDATE	→ To modify existing row values
+DELETE	→ To remove rows from a table
+
+🔹 DDL – Data Definition Language
+Command	Purpose
+CREATE TABLE	→ To create a new table
+ALTER TABLE	→ To add/rename columns or modify structure
+DROP TABLE	→ To delete a table completely
+TRUNCATE TABLE	→ To delete all rows but keep table structure
+RENAME	→ To rename table or column
+
+🔹 JOINS – Combine Tables
+Command	Purpose
+JOIN	→ Combines rows from 2+ tables on a condition
+ON	→ Condition to match columns in JOIN
+DISTINCT	→ Removes duplicate rows from result
+
+🔹 FILTERING – Conditions
+Command	Purpose
+WHERE	→ Filters rows before grouping
+LIKE	→ Pattern match ('A%' → starts with A)
+IN / NOT IN	→ Filter values from a list
+AND / OR	→ Combine multiple conditions
+
+🔹 AGGREGATES – Grouped Calculations
+Function	Purpose
+COUNT()	→ Count rows
+SUM()	→ Total of values
+AVG()	→ Average of values
+MIN() / MAX()	→ Smallest/largest value in column
+
+🔹 GROUPING + FILTERING GROUPS
+Command	Purpose
+GROUP BY	→ Group rows to apply aggregate functions
+HAVING	→ Filter groups after GROUP BY (not individual rows)
+
+🔹 KEYS & CONSTRAINTS
+Constraint	Purpose
+PRIMARY KEY	→ Uniquely identifies each row
+FOREIGN KEY	→ Links to primary key in another table
+UNIQUE	→ No duplicate values in column
+NOT NULL	→ Value must be given (not empty)
+CHECK	→ Restricts values with a condition
+
+🔹 Views, Triggers, Procedures (Advanced)
+Concept	Purpose
+VIEW	→ Virtual table created from query
+TRIGGER	→ Auto-run action on INSERT/UPDATE/DELETE
+PROCEDURE	→ Reusable SQL block with logic
+/////////////////////////////////////////////////
+DROP TABLE IF EXISTS Res;
+DROP TABLE IF EXISTS Boats;
+DROP TABLE IF EXISTS Sailors;
+
+
+CREATE TABLE Sailors (
+    sid INT PRIMARY KEY,
+    sname VARCHAR(50),
+    rating INT,
+    age FLOAT
+);
+
+CREATE TABLE Boats (
+    bid INT PRIMARY KEY,
+    bname VARCHAR(50),
+    color VARCHAR(50)
+);
+
+INSERT INTO Boats (bid, bname, color) VALUES
+(1, 'Titanic', 'black'),
+(2, 'Speedboat', 'red'),
+(3, 'Wooden', 'green'),
+(4, 'Titan', 'red'),
+(5, 'Nick', 'green');
+
+CREATE TABLE Res (
+    sid INT,
+    bid INT,
+    day DATE,
+    PRIMARY KEY (sid, bid, day),
+    FOREIGN KEY (sid) REFERENCES Sailors(sid),
+    FOREIGN KEY (bid) REFERENCES Boats(bid)
+);
+
+ALTER TABLE Sailors ADD email VARCHAR(100);
+ALTER TABLE Sailors RENAME TO SailorMaster;
+ALTER TABLE SailorMaster ADD phone BIGINT;
+ALTER TABLE SailorMaster RENAME COLUMN sname TO name;
+
+INSERT INTO SailorMaster (sid, name, rating, age, email, phone)
+VALUES
+(1, 'Sonu', 9, 19, 'bjhv1234@gmail.com', 901437180),
+(2, 'John', 8, 29, 'bjhv2345@gmail.com', 701837140);
+
+UPDATE SailorMaster
+SET rating = 10
+WHERE name = 'John';
+
+DELETE FROM SailorMaster
+WHERE name = 'Sonu';
+
+INSERT INTO SailorMaster (sid, name, rating, age, email, phone)
+VALUES
+(1, 'Sonu', 9, 19, 'bjhv1234@gmail.com', 901437180),
+(3, 'Vardhan', 7, 14, 'bjhv4234@gmail.com', 901437181);
+
+INSERT INTO Res (sid, bid, day) VALUES
+(1, 1, '2024-06-01'),  -- Sonu reserved black
+(1, 3, '2024-06-02'),  -- Sonu reserved green
+(2, 2, '2024-06-01'),  -- John reserved red
+(3, 4, '2024-06-02'),  -- Vardhan reserved red
+(3, 5, '2024-06-03');  -- Vardhan reserved green
+
+SELECT DISTINCT name
+FROM SailorMaster S
+JOIN Res R ON S.sid = R.sid
+JOIN Boats B ON R.bid = B.bid
+WHERE B.color = 'red';
+
+SELECT S.name, COUNT(*) AS reservation_count
+FROM SailorMaster S
+JOIN Res R ON S.sid = R.sid
+GROUP BY S.sid, S.name
+HAVING COUNT(*) > 1;
+
+SELECT age, AVG(rating) AS avg_rating
+FROM SailorMaster
+GROUP BY age
+HAVING AVG(rating) > 8;
+
+SELECT rating, AVG(age) AS avg_age
+FROM SailorMaster
+GROUP BY rating
+HAVING COUNT(*) >= 2;
+
+SELECT * FROM res;
